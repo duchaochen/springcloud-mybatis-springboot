@@ -27,7 +27,7 @@
             private String 	db_source;// 来自那个数据库，因为微服务架构可以一个服务对应一个数据库，同一个信息被存储到不同数据库
         }
     
-# 整合springboot+mybatis
+# 提供方整合springboot+mybatis
     
     1.由于entity包下的所有的实体类会在其它工程中都会使用，所以我们创建一个单独的工程来保存实体类
     
@@ -168,4 +168,54 @@
             }
         }
         
-    
+### 调用方springboot工程
+
+    1.application.yml文件代码
+        server:
+          port: 9001
+          
+    2.创建一个调用方的配置类，导入一个后端调用http请求类：RestTemplate，代码如下:
+         /**
+         * 后端调用http请求类
+         * @return
+         */
+        @Bean
+        public RestTemplate restTemplate() {
+            return new RestTemplate();
+        }
+        
+    3.controller层代码：
+        @RestController
+        public class DeptConsumerController {
+        
+            private final String HTTP_URL = "http://localhost:8001";
+        
+            @Autowired
+            private RestTemplate restTemplate;
+        
+            @RequestMapping("/dept/add")
+            public boolean add(Dept dept) {
+        
+                /**
+                 * 使用的post方式访问
+                 *  url : 访问地址
+                 *  request : post提交的参数
+                 *  responseType : 返回的类型
+                 */
+                Boolean aBoolean = restTemplate.postForObject(HTTP_URL + "/dept/add", dept, Boolean.class);
+                return aBoolean;
+            }
+        
+            @GetMapping("/dept/get/{id}")
+            public Dept get(@PathVariable Long id) {
+                return restTemplate.getForObject(HTTP_URL + "/dept/get/" + id,Dept.class);
+            }
+        
+            @GetMapping("/dept/list")
+            public List<Dept> list() {
+                return restTemplate.getForObject(HTTP_URL + "/dept/list",List.class);
+            }
+        }
+        
+    然后启动2个工程，直接使用链接：http://localhost:9001/dept/list调用成功。
+
