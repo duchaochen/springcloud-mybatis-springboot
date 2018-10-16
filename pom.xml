@@ -10,6 +10,7 @@
         <module>springcloud-mybatis-springboot-api</module>
         <module>springcloud-mybatis-springboot-provider-dept-8001</module>
         <module>springcloud-mybatis-springboot-consumer-dept-80</module>
+        <module>springcloud-mybatis-springboot-eureka</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -22,23 +23,41 @@
         <log4j.version>1.2.17</log4j.version>
         <lombok.version>1.16.18</lombok.version>
         <springloaded.version>1.2.6.RELEASE</springloaded.version>
+        <springboot.version>2.0.3.RELEASE</springboot.version>
+        <springcloud.version>Finchley.RELEASE</springcloud.version>
+        <springcloud.eureka.version>2.0.0.RELEASE</springcloud.eureka.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!--导入springcloud版本-->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Dalston.SR1</version>
+                <version>${springcloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!--导入springboot版本-->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.0.5.RELEASE</version>
+                <version>${springboot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!--eureka注册中心-->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+                <version>${springcloud.eureka.version}</version>
+            </dependency>
+
+            <!-- 修改后立即生效，热部署 -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>springloaded</artifactId>
+                <version>${springloaded.version}</version>
             </dependency>
             <dependency>
                 <groupId>mysql</groupId>

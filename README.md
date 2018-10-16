@@ -222,3 +222,95 @@
    
 
 # springcloud+springboot+mybatis-第二天
+
+### 配置eureka注册中心
+
+    1.父工程中pom.xml代码：
+        <springloaded.version>1.2.6.RELEASE</springloaded.version>
+        <springboot.version>2.0.3.RELEASE</springboot.version>
+        <springcloud.version>Finchley.RELEASE</springcloud.version>
+        <springcloud.eureka.version>2.0.0.RELEASE</springcloud.eureka.version>
+        <dependencyManagement>
+            <dependencies>
+                <!--导入springcloud版本-->
+                <dependency>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-dependencies</artifactId>
+                    <version>${springcloud.version}</version>
+                    <type>pom</type>
+                    <scope>import</scope>
+                </dependency>
+                <!--导入springboot版本-->
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-dependencies</artifactId>
+                    <version>${springboot.version}</version>
+                    <type>pom</type>
+                    <scope>import</scope>
+                </dependency>
+                <!--springboot启动器-->
+                 <dependency>
+                    <groupId>org.mybatis.spring.boot</groupId>
+                    <artifactId>mybatis-spring-boot-starter</artifactId>
+                    <version>1.3.0</version>
+                </dependency>
+                 <!--eureka注册中心-->
+                <dependency>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+                    <version>${springcloud.eureka.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>springloaded</artifactId>
+                    <version>${springloaded.version}</version>
+                </dependency>
+            </dependencies>
+            ....
+            ....
+        </dependencyManagement>
+        
+    2.子工程pom.xml
+        <dependencies>
+            <!--eureka-server服务端 -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+            </dependency>
+    
+            <!-- 修改后立即生效，热部署 -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>springloaded</artifactId>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-devtools</artifactId>
+            </dependency>
+        </dependencies>
+        
+    3.子工程的全局配置文件
+        server:
+          port: 7001
+        
+        eureka:
+          instance:
+            hostname: localhost                         #eureka服务端的实例名称
+        
+          client:
+            register-with-eureka: false                 #false表示不向注册中心注册自己
+            fetch-registry: false                       #false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
+            service-url:
+              defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/    #设置与Eureka Server交互的地址查询服务和注册服务都需要依赖这个地址（单机）。
+        
+        #      defaultZone: http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/   #设置集群
+
+    4.启动类需要加上@EnableEurekaServer注解即可
+        @SpringBootApplication
+        @EnableEurekaServer    // EurekaServer服务器端启动类,接受其它微服务注册进来
+        public class SpringcloudMybatisSpringbootEurekaApplication {
+        
+        	public static void main(String[] args) {
+        		SpringApplication.run(SpringcloudMybatisSpringbootEurekaApplication.class, args);
+        	}
+        }
