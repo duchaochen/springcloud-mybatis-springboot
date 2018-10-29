@@ -29,7 +29,60 @@
     
 ### 提供方整合springboot+mybatis
     
-    1.由于entity包下的所有的实体类会在其它工程中都会使用，所以我们创建一个单独的工程来保存实体类
+    1.由于entity包下的所有的实体类会在其它工程中都会使用，所以我们创建一个单独的工程来保存实体类，供其它工程引用
+        <dependencies>
+                <!-- 引入自己定义的api通用包，可以使用Dept部门Entity -->
+                <dependency>
+                    <groupId>com.adu.springcloud</groupId>
+                    <artifactId>springcloud-mybatis-springboot-api</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </dependency>
+        
+                <dependency>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.alibaba</groupId>
+                    <artifactId>druid</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.mybatis.spring.boot</groupId>
+                    <artifactId>mybatis-spring-boot-starter</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-jetty</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-web</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-test</artifactId>
+                </dependency>
+                <!-- 修改后立即生效，热部署 -->
+                <!-- https://mvnrepository.com/artifact/org.springframework/springloaded -->
+                <dependency>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>springloaded</artifactId>
+                </dependency>
+        
+                <dependency>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-devtools</artifactId>
+                </dependency>
+         </dependencies>
+        
     
     2.创建一个dept服务提供者工程,以及全局配置文件代码
             server:
@@ -170,11 +223,45 @@
         
 ### 调用方springboot工程
 
-    1.application.yml文件代码
+    1.pom.xml文件代码:
+        <dependencies>
+        		<!-- 引入自己定义的api通用包，可以使用Dept部门Entity -->
+        		<dependency>
+        			<groupId>com.adu.springcloud</groupId>
+        			<artifactId>springcloud-mybatis-springboot-api</artifactId>
+        			<version>${project.version}</version>
+        		</dependency>
+        		
+        		<dependency>
+        			<groupId>org.springframework.boot</groupId>
+        			<artifactId>spring-boot-starter-web</artifactId>
+        		</dependency>
+        
+        		<dependency>
+        			<groupId>org.springframework.boot</groupId>
+        			<artifactId>spring-boot-starter-test</artifactId>
+        			<scope>test</scope>
+        		</dependency>
+        
+        		<!-- 修改后立即生效，热部署 -->
+        		<!-- https://mvnrepository.com/artifact/org.springframework/springloaded -->
+        		<dependency>
+        			<groupId>org.springframework</groupId>
+        			<artifactId>springloaded</artifactId>
+        			<version>${springloaded.version}</version>
+        		</dependency>
+        
+        		<dependency>
+        			<groupId>org.springframework.boot</groupId>
+        			<artifactId>spring-boot-devtools</artifactId>
+        		</dependency>
+        	</dependencies>
+
+    2.application.yml文件代码
         server:
           port: 9001
           
-    2.创建一个调用方的配置类，导入一个后端调用http请求类：RestTemplate，代码如下:
+    3.创建一个调用方的配置类，导入一个后端调用http请求类：RestTemplate，代码如下:
          /**
          * 后端调用http请求类
          * @return
@@ -184,7 +271,7 @@
             return new RestTemplate();
         }
         
-    3.controller层代码：
+    4.controller层代码：
         @RestController
         public class DeptConsumerController {
         
@@ -270,7 +357,7 @@
             ....
         </dependencyManagement>
         
-    2.子工程pom.xml
+    2.子工程pom.xml(springcloud-mybatis-springboot-eureka)
         <dependencies>
             <!--eureka-server服务端 -->
             <dependency>
@@ -314,3 +401,82 @@
         		SpringApplication.run(SpringcloudMybatisSpringbootEurekaApplication.class, args);
         	}
         }
+        
+    5.子工程pom.xml(springcloud-mybatis-springboot-provider-dept-8001)
+        在该工程的pom文件中添加
+            <!-- actuator监控信息完善 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-actuator</artifactId>
+            </dependency>
+            <!-- 将微服务provider侧注册进eureka -->
+            <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-eureka -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-eureka</artifactId>
+                <version>1.4.5.RELEASE</version>
+            </dependency>
+    
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-starter-config</artifactId>
+            </dependency>
+            
+    6.然后在启动类中添加@EnableEurekaClient注解
+        @SpringBootApplication
+        @EnableEurekaClient
+        public class DeptProvider8001_App {
+        
+            public static void main(String[] args) {
+                SpringApplication.run(DeptProvider8001_App.class,args);
+            }
+        }
+
+### Ribbon
+
+    1.在调用方(springcloud-mybatis-springboot-consumer-dept-80)pom.xml的配置文件中添加
+        <!-- Ribbon相关 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-eureka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-ribbon</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+    
+    2.在全局yml文件里
+        #直接可以调用eureka中的服务名称
+        eureka:
+          client:
+            register-with-eureka: false                 #false表示不向注册中心注册自己
+            service-url:
+              defaultZone: http://localhost:7001/eureka     #调用eureka的服务,如果是集群就加上集群的所有链接以逗号隔开
+              
+    3.在配置类中添加@LoadBalanced注解
+        /**
+         * 后端调用http请求类
+         * @LoadBalanced: 配置负载均衡
+         * @return
+         */
+        @Bean
+        @LoadBalanced
+        public RestTemplate restTemplate() {
+            return new RestTemplate();
+        }
+        
+    4.在启动类中添加@EnableEurekaClient
+        @SpringBootApplication
+        @EnableEurekaClient
+        public class SpringcloudMybatisSpringbootConsumerDept80Application {
+        
+        	public static void main(String[] args) {
+        		SpringApplication.run(SpringcloudMybatisSpringbootConsumerDept80Application.class, args);
+        	}
+        }
+    5.然后将controller类中的访问地址代码修改为： private final String HTTP_URL = "http://LIS-8001";
+   

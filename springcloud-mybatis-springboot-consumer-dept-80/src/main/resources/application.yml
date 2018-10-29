@@ -1,2 +1,10 @@
 server:
   port: 9001
+
+#直接可以调用eureka中的服务名称
+eureka:
+  client:
+    register-with-eureka: false                 #false表示不向注册中心注册自己
+    service-url:
+      defaultZone: http://localhost:7001/eureka   #调用eureka的服务,如果是集群就加上集群的所有链接以逗号隔开
+

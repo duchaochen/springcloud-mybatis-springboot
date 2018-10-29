@@ -10,7 +10,8 @@ import java.util.List;
 @RestController
 public class DeptConsumerController {
 
-    private final String HTTP_URL = "http://localhost:8001";
+//    private final String HTTP_URL = "http://localhost:8001";
+    private final String HTTP_URL = "http://LIS-8001";
 
     @Autowired
     private RestTemplate restTemplate;
